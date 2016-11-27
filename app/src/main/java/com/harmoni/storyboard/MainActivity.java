@@ -1,5 +1,6 @@
 package com.harmoni.storyboard;
 
+import android.content.Context;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -41,6 +43,9 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private String[] mDrawerItems;
+    private LayoutInflater mInflater;
+    private ViewGroup mDecor;
+    private FrameLayout mContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,10 +74,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mDrawerLayout = (DrawerLayout) mInflater.inflate(R.layout.left_drawer, null);
+        View header = mInflater.inflate(R.layout.left_drawer_header, null);
+
+        mDecor = (ViewGroup) getWindow().getDecorView();
+        View child = mDecor.getChildAt(0);
+        mDecor.removeView(child);
+        mContainer = (FrameLayout) mDrawerLayout.findViewById(R.id.content_frame);
+        mContainer.addView(child);
+        mDecor.addView(mDrawerLayout);
+
+        mDrawerList = (ListView) findViewById(R.id.left_drawer_list);
         mDrawerItems = getResources().getStringArray(R.array.drawer_items);
 
+        mDrawerList.addHeaderView(header);
         mDrawerList.setAdapter(new ArrayAdapter<String>(this,
                 R.layout.drawer_list_item, mDrawerItems));
 
@@ -131,7 +147,11 @@ public class MainActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            if (getArguments().getInt(ARG_SECTION_NUMBER) == 1){
+                textView.setText(getString(R.string.lorem_ipsum));
+            } else {
+                textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            }
             return rootView;
         }
     }
